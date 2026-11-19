@@ -53,7 +53,7 @@ client.on(Events.GuildMemberAdd, async (member) => {
 
     // SIMPLE WELCOME MESSAGE
     await channel.send({
-    content: `✦ **${member.user.username}** just joined **VILE**.`,
+    content: `**${member}** just joined **VILE**.`,
       allowedMentions: { parse: [] }
     });
 
