@@ -23,4 +23,5 @@ client.on('guildMemberAdd', async (member) => {
     }
 });
 
+console.log("TOKEN LOADED:", !!process.env.TOKEN);
 client.login(process.env.TOKEN);
