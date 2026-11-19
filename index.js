@@ -18,7 +18,7 @@ const client = new Client({
 // ==============================
 
 const ROLE_ID = '1573097204862943262';
-const WELCOME_CHANNEL_ID = 'OVDE_STAVI_ID_WELCOME_KANALA';
+const WELCOME_CHANNEL_ID = '1573121519830171839';
 
 const COLOR = 0x56015A;
 
