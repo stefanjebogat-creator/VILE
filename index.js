@@ -4,8 +4,11 @@ const {
   GatewayIntentBits,
   PermissionsBitField,
   Events,
-  EmbedBuilder
+  EmbedBuilder,
+  AttachmentBuilder
 } = require('discord.js');
+
+const { createCanvas, loadImage } = require('@napi-rs/canvas');
 
 const client = new Client({
   intents: [
@@ -74,7 +77,7 @@ client.on(Events.MessageCreate, async (message) => {
 
     if (!/^\d{17,20}$/.test(userId)) return;
 
-    const reason = args.slice(mentionedUser ? 1 : 1).join(' ') || 'No reason provided.';
+    const reason = args.slice(1).join(' ') || 'No reason provided.';
 
     try {
       await message.guild.members.ban(userId, {
@@ -109,6 +112,8 @@ client.on(Events.MessageCreate, async (message) => {
       });
 
     } catch (error) {
+      console.error('Ban error:', error);
+
       const embed = new EmbedBuilder()
         .setColor(COLOR)
         .setDescription('Failed to ban this user.');
@@ -167,6 +172,8 @@ client.on(Events.MessageCreate, async (message) => {
       });
 
     } catch (error) {
+      console.error('Unban error:', error);
+
       const embed = new EmbedBuilder()
         .setColor(COLOR)
         .setDescription('Failed to unban this user.');
@@ -230,6 +237,8 @@ client.on(Events.MessageCreate, async (message) => {
       }, 5000);
 
     } catch (error) {
+      console.error('Clear error:', error);
+
       const embed = new EmbedBuilder()
         .setColor(COLOR)
         .setDescription('Failed to delete messages.');
@@ -391,32 +400,96 @@ client.on(Events.MessageCreate, async (message) => {
 
     const percentage = Math.floor(Math.random() * 101);
 
-    let shipMessage;
+    try {
+      const canvas = createCanvas(600, 300);
+      const ctx = canvas.getContext('2d');
 
-    if (percentage >= 90) {
-      shipMessage = 'A perfect match! ❤️';
-    } else if (percentage >= 70) {
-      shipMessage = 'There is definitely something special here! 💕';
-    } else if (percentage >= 40) {
-      shipMessage = 'There might be a chance! 💗';
-    } else {
-      shipMessage = 'Maybe better as friends! 😂';
+      // Background
+      ctx.fillStyle = '#1e1e1e';
+      ctx.fillRect(0, 0, 600, 300);
+
+      // Load avatars
+      const firstAvatar = await loadImage(
+        firstUser.displayAvatarURL({ extension: 'png', size: 512 })
+      );
+
+      const secondAvatar = await loadImage(
+        secondUser.displayAvatarURL({ extension: 'png', size: 512 })
+      );
+
+      // First avatar
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(40, 50, 200, 200);
+      ctx.clip();
+      ctx.drawImage(firstAvatar, 40, 50, 200, 200);
+      ctx.restore();
+
+      // Second avatar
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(360, 50, 200, 200);
+      ctx.clip();
+      ctx.drawImage(secondAvatar, 360, 50, 200, 200);
+      ctx.restore();
+
+      // Heart
+      ctx.save();
+      ctx.translate(300, 155);
+      ctx.scale(1.05, 1.05);
+
+      ctx.beginPath();
+      ctx.moveTo(0, 85);
+      ctx.bezierCurveTo(-25, 70, -105, 15, -105, -35);
+      ctx.bezierCurveTo(-105, -100, -25, -100, 0, -45);
+      ctx.bezierCurveTo(25, -100, 105, -100, 105, -35);
+      ctx.bezierCurveTo(105, 15, 25, 70, 0, 85);
+      ctx.closePath();
+
+      ctx.fillStyle = '#c8102e';
+      ctx.fill();
+
+      // Percentage
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 43px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`${percentage}%`, 0, 0);
+
+      ctx.restore();
+
+      const attachment = new AttachmentBuilder(
+        await canvas.encode('png'),
+        { name: 'ship.png' }
+      );
+
+      const embed = new EmbedBuilder()
+        .setColor(COLOR)
+        .setTitle('VILE • Love Calculator')
+        .setDescription(
+          `💘 **${firstUser.username}** + **${secondUser.username}**`
+        )
+        .setImage('attachment://ship.png')
+        .setFooter({ text: 'VILE • Love Calculator' })
+        .setTimestamp();
+
+      return message.channel.send({
+        embeds: [embed],
+        files: [attachment],
+        allowedMentions: { parse: [] }
+      });
+
+    } catch (error) {
+      console.error('Ship command error:', error);
+
+      return message.channel.send({
+        embeds: [
+          new EmbedBuilder()
+            .setColor(COLOR)
+            .setDescription('Failed to create the ship image.')
+        ]
+      });
     }
-
-    const embed = new EmbedBuilder()
-      .setColor(COLOR)
-      .setTitle('VILE • Love Calculator')
-      .setDescription(
-        `💘 **${firstUser.username}** + **${secondUser.username}**\n\n` +
-        `**Love percentage:** ${percentage}%\n\n${shipMessage}`
-      )
-      .setFooter({ text: 'VILE • Fun' })
-      .setTimestamp();
-
-    return message.channel.send({
-      embeds: [embed],
-      allowedMentions: { parse: [] }
-    });
   }
 
   // HUG
@@ -431,79 +504,23 @@ client.on(Events.MessageCreate, async (message) => {
       return message.channel.send({ embeds: [embed] });
     }
 
-    const hugMessages = [
-      'sent a warm hug to',
-      'gave a big hug to',
-      'is sending lots of love to',
-      'gave a cozy hug to'
+    const hugGifs = [
+      'https://media.giphy.com/media/l4FGpP4lxGGgK5CBW/giphy.gif',
+      'https://media.giphy.com/media/fvN5KrNcKKUyX7hNIA/giphy.gif',
+      'https://media1.tenor.com/m/jNmFSEsozwQAAAAd/okami-approaching.gif'
     ];
 
-    const randomMessage = hugMessages[
-      Math.floor(Math.random() * hugMessages.length)
+    const randomGif = hugGifs[
+      Math.floor(Math.random() * hugGifs.length)
     ];
 
     const embed = new EmbedBuilder()
       .setColor(COLOR)
       .setDescription(
-        `🤗 **${message.author.username}** ${randomMessage} **${target.username}**! ❤️`
+        `🤗 **${message.author.username}** gave **${target.username}** a big hug! ❤️`
       )
-      .setFooter({ text: 'VILE • Fun' })
-      .setTimestamp();
-
-    return message.channel.send({
-      embeds: [embed],
-      allowedMentions: { parse: [] }
-    });
-  }
-
-  // ROAST
-  if (command === 'roast') {
-    const target = message.mentions.users.first();
-
-    if (!target) {
-      const embed = new EmbedBuilder()
-        .setColor(COLOR)
-        .setDescription('Usage: `!roast @user`');
-
-      return message.channel.send({ embeds: [embed] });
-    }
-
-    if (target.id === message.author.id) {
-      const embed = new EmbedBuilder()
-        .setColor(COLOR)
-        .setDescription('You cannot roast yourself. 😂');
-
-      return message.channel.send({ embeds: [embed] });
-    }
-
-   const roastMessages = [
-  'ima manje mozga nego što telefon ima memorije. 💀',
-  'kad razmišlja, čuje se zvuk greške.',
-  'toliko je spor da ga i puž čeka.',
-  'ima više sreće nego pameti.',
-  'čak bi i Google odustao od pokušaja da ga razume.',
-  'kad bi glupost bila sport, bio bi svetski šampion. 🏆',
-  'ima dve leve ruke i tri leve noge.',
-  'nije on glup, samo mu je mozak na odmoru.',
-  'toliko je izgubljen da bi se izgubio i u sopstvenoj sobi.',
-  'njegov mozak radi na probnoj verziji.',
-  'kad uđe u sobu, IQ automatski padne za 50.',
-  'ima više bagova nego Windows bez ažuriranja.',
-  'čak ga ni mama ne razume ponekad. 😂',
-  'da je ćutanje zlato, on bi bio milioner.',
-  'toliko je spor da mu poruka stigne pre nego što je pošalje.',
-  'nije problem što ne zna, nego što je siguran da zna.'
-];
-
-    const randomRoast = roastMessages[
-      Math.floor(Math.random() * roastMessages.length)
-    ];
-
-    const embed = new EmbedBuilder()
-      .setColor(COLOR)
-      .setTitle('VILE • Roast')
-      .setDescription(`🔥 **${target.username}** ${randomRoast}`)
-      .setFooter({ text: 'VILE • Just for fun' })
+      .setImage(randomGif)
+      .setFooter({ text: 'VILE • Hugs & Love' })
       .setTimestamp();
 
     return message.channel.send({
