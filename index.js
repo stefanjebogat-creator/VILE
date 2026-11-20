@@ -16,7 +16,7 @@ const client = new Client({
 });
 
 // ==============================
-// VILE CONFIGURATION
+// VILE PODESAVANJA
 // ==============================
 
 const ROLE_ID = '1573097204862943262';
@@ -25,25 +25,34 @@ const WELCOME_CHANNEL_ID = '1573121519830171839';
 const PREFIX = '!';
 
 // ==============================
-// BOT READY
+// BOT ONLINE
 // ==============================
 
 client.once(Events.ClientReady, (bot) => {
-  console.log(`VILE is online as ${bot.user.tag}`);
+  console.log(`VILE je uspesno pokrenut kao ${bot.user.tag}!`);
 });
 
 // ==============================
-// WELCOME SYSTEM
+// WELCOME SISTEM
 // ==============================
 
 client.on(Events.GuildMemberAdd, async (member) => {
   try {
+    // AUTOMATSKO DODELJIVANJE ROLE
     const role = member.guild.roles.cache.get(ROLE_ID);
 
     if (role) {
       await member.roles.add(role);
+    } else {
+      console.log('VILE: Rola nije pronadjena.');
     }
 
+  } catch (error) {
+    console.error('Greska pri dodeljivanju role:', error);
+  }
+
+  try {
+    // WELCOME KANAL
     const channel = member.guild.channels.cache.get(
       WELCOME_CHANNEL_ID
     );
@@ -51,19 +60,19 @@ client.on(Events.GuildMemberAdd, async (member) => {
     if (!channel || !channel.isTextBased()) return;
 
     await channel.send({
-      content: `**${member}** just joined **VILE**.`,
+      content: `**${member}** se upravo pridruzio serveru **VILE**.`,
       allowedMentions: {
         users: [member.id]
       }
     });
 
   } catch (error) {
-    console.error('VILE WELCOME ERROR:', error);
+    console.error('Greska pri slanju welcome poruke:', error);
   }
 });
 
 // ==============================
-// BAN & UNBAN COMMANDS
+// BAN I UNBAN KOMANDE
 // ==============================
 
 client.on(Events.MessageCreate, async (message) => {
@@ -71,97 +80,125 @@ client.on(Events.MessageCreate, async (message) => {
 
   if (!message.content.startsWith(PREFIX)) return;
 
-  const args = message.content.slice(PREFIX.length).trim().split(/ +/);
+  const args = message.content
+    .slice(PREFIX.length)
+    .trim()
+    .split(/ +/);
+
   const command = args.shift()?.toLowerCase();
 
   // ============================
-  // BAN COMMAND
+  // BAN KOMANDA
   // ============================
 
   if (command === 'ban') {
+
     if (!message.member.permissions.has(
       PermissionsBitField.Flags.BanMembers
     )) {
-      return message.reply('You do not have permission to ban members.');
-    }
-
-    const target = message.mentions.members.first();
-
-    if (!target) {
-      return message.reply('Usage: `!ban @user [reason]`');
-    }
-
-    if (!target.bannable) {
-      return message.reply('I cannot ban this member. Check my role position and permissions.');
-    }
-
-    const reason = args.slice(1).join(' ') || 'No reason provided';
-
-    try {
-      await target.ban({ reason });
-
-      const channel = message.guild.channels.cache.get(
-        WELCOME_CHANNEL_ID
+      return message.reply(
+        'Nemate dozvolu za banovanje clanova.'
       );
-
-      if (channel) {
-        await channel.send({
-          content: `**${target.user.tag}** was banned from **VILE**.\nReason: ${reason}`
-        });
-      }
-
-      await message.reply(`Successfully banned **${target.user.tag}**.`);
-
-    } catch (error) {
-      console.error('VILE BAN ERROR:', error);
-      await message.reply('Failed to ban this member.');
-    }
-  }
-
-  // ============================
-  // UNBAN COMMAND
-  // ============================
-
-  if (command === 'unban') {
-    if (!message.member.permissions.has(
-      PermissionsBitField.Flags.BanMembers
-    )) {
-      return message.reply('You do not have permission to unban members.');
     }
 
     const userId = args[0];
 
     if (!userId || !/^\d{17,20}$/.test(userId)) {
-      return message.reply('Usage: `!unban USER_ID [reason]`');
+      return message.reply(
+        'Pogresan ID!\nKoriscenje: `!ban ID razlog`'
+      );
     }
 
-    const reason = args.slice(1).join(' ') || 'No reason provided';
+    const reason = args.slice(1).join(' ') || 'Razlog nije naveden';
 
     try {
-      await message.guild.members.unban(userId, reason);
+      await message.guild.members.ban(userId, {
+        reason: `${reason} | Banovao: ${message.author.tag}`
+      });
 
       const channel = message.guild.channels.cache.get(
         WELCOME_CHANNEL_ID
       );
 
-      if (channel) {
-        await channel.send({
-          content: `**<@${userId}>** was unbanned from **VILE**.\nReason: ${reason}`,
-          allowedMentions: { parse: [] }
-        });
+      if (channel && channel.isTextBased()) {
+        await channel.send(
+          `**Korisnik sa ID-em \`${userId}\` je banovan sa servera VILE.**\nRazlog: ${reason}`
+        );
       }
 
-      await message.reply(`Successfully unbanned user **${userId}**.`);
+      await message.reply(
+        `Uspesno ste banovali korisnika sa ID-em \`${userId}\`.`
+      );
+
+      console.log(`Banovan korisnik: ${userId}`);
 
     } catch (error) {
-      console.error('VILE UNBAN ERROR:', error);
-      await message.reply('Failed to unban this user. Check the ID and ban list.');
+      console.error('Greska pri banovanju:', error);
+
+      await message.reply(
+        'Banovanje nije uspelo. Proverite ID i dozvole bota.'
+      );
+    }
+  }
+
+  // ============================
+  // UNBAN KOMANDA
+  // ============================
+
+  if (command === 'unban') {
+
+    if (!message.member.permissions.has(
+      PermissionsBitField.Flags.BanMembers
+    )) {
+      return message.reply(
+        'Nemate dozvolu za skidanje bana.'
+      );
+    }
+
+    const userId = args[0];
+
+    if (!userId || !/^\d{17,20}$/.test(userId)) {
+      return message.reply(
+        'Pogresan ID!\nKoriscenje: `!unban ID razlog`'
+      );
+    }
+
+    const reason = args.slice(1).join(' ') || 'Razlog nije naveden';
+
+    try {
+      await message.guild.members.unban(
+        userId,
+        `${reason} | Skinuo ban: ${message.author.tag}`
+      );
+
+      const channel = message.guild.channels.cache.get(
+        WELCOME_CHANNEL_ID
+      );
+
+      if (channel && channel.isTextBased()) {
+        await channel.send(
+          `**Korisniku sa ID-em \`${userId}\` je skinut ban na serveru VILE.**\nRazlog: ${reason}`
+        );
+      }
+
+      await message.reply(
+        `Uspesno ste skinuli ban korisniku sa ID-em \`${userId}\`.`
+      );
+
+      console.log(`Skinut ban korisniku: ${userId}`);
+
+    } catch (error) {
+      console.error('Greska pri skidanju bana:', error);
+
+      await message.reply(
+        'Skidanje bana nije uspelo. Proverite ID i da li je korisnik banovan.'
+      );
     }
   }
 });
 
 // ==============================
-// LOGIN
+// POKRETANJE BOTA
 // ==============================
 
 client.login(process.env.TOKEN);
