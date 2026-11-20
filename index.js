@@ -21,6 +21,7 @@ const client = new Client({
 
 const ROLE_ID = '1573097204862943262';
 const WELCOME_CHANNEL_ID = '1573121519830171839';
+const MODLOG_CHANNEL_ID = '1573136589737951283';
 
 const PREFIX = '!';
 
@@ -91,17 +92,20 @@ client.on(Events.MessageCreate, async (message) => {
       );
     }
 
-    const userId = args[0];
+    const mentionedUser = message.mentions.users.first();
+    const userId = mentionedUser?.id || args[0];
 
     if (!userId) {
       return message.reply(
-        'Korišćenje: `!ban ID razlog`'
+        'Korišćenje: `!ban ID razlog` ili `!ban @korisnik razlog`'
       );
     }
 
     if (!/^\d{17,20}$/.test(userId)) return;
 
-    const reason = args.slice(1).join(' ') || 'Razlog nije naveden';
+    const reason = (
+      mentionedUser ? args.slice(1) : args.slice(1)
+    ).join(' ') || 'Razlog nije naveden';
 
     try {
       await message.guild.members.ban(userId, {
@@ -109,12 +113,12 @@ client.on(Events.MessageCreate, async (message) => {
       });
 
       const channel = message.guild.channels.cache.get(
-        WELCOME_CHANNEL_ID
+        MODLOG_CHANNEL_ID
       );
 
       if (channel && channel.isTextBased()) {
         await channel.send(
-          `**Korisnik sa ID-em \`${userId}\` je banovan sa servera VILE.**\nRazlog: ${reason}`
+          `**Korisnik sa ID-em \`${userId}\` je banovan sa servera VILE.**\nRazlog: ${reason}\nModerator: ${message.author}`
         );
       }
 
@@ -166,12 +170,12 @@ client.on(Events.MessageCreate, async (message) => {
       );
 
       const channel = message.guild.channels.cache.get(
-        WELCOME_CHANNEL_ID
+        MODLOG_CHANNEL_ID
       );
 
       if (channel && channel.isTextBased()) {
         await channel.send(
-          `**Korisniku sa ID-em \`${userId}\` je skinut ban na serveru VILE.**\nRazlog: ${reason}`
+          `**Korisniku sa ID-em \`${userId}\` je skinut ban na serveru VILE.**\nRazlog: ${reason}\nModerator: ${message.author}`
         );
       }
 
