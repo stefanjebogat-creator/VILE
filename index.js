@@ -29,7 +29,7 @@ const PREFIX = '!';
 // ==============================
 
 client.once(Events.ClientReady, (bot) => {
-  console.log(`VILE je uspesno pokrenut kao ${bot.user.tag}!`);
+  console.log(`VILE je pokrenut kao ${bot.user.tag}!`);
 });
 
 // ==============================
@@ -38,21 +38,12 @@ client.once(Events.ClientReady, (bot) => {
 
 client.on(Events.GuildMemberAdd, async (member) => {
   try {
-    // AUTOMATSKO DODELJIVANJE ROLE
     const role = member.guild.roles.cache.get(ROLE_ID);
 
     if (role) {
       await member.roles.add(role);
-    } else {
-      console.log('VILE: Rola nije pronadjena.');
     }
 
-  } catch (error) {
-    console.error('Greska pri dodeljivanju role:', error);
-  }
-
-  try {
-    // WELCOME KANAL
     const channel = member.guild.channels.cache.get(
       WELCOME_CHANNEL_ID
     );
@@ -60,14 +51,14 @@ client.on(Events.GuildMemberAdd, async (member) => {
     if (!channel || !channel.isTextBased()) return;
 
     await channel.send({
-      content: `**${member}** se upravo pridruzio serveru **VILE**.`,
+      content: `**${member}** se upravo pridružio serveru **VILE**.`,
       allowedMentions: {
         users: [member.id]
       }
     });
 
   } catch (error) {
-    console.error('Greska pri slanju welcome poruke:', error);
+    console.error('Greška pri welcome sistemu:', error);
   }
 });
 
@@ -77,7 +68,6 @@ client.on(Events.GuildMemberAdd, async (member) => {
 
 client.on(Events.MessageCreate, async (message) => {
   if (!message.guild || message.author.bot) return;
-
   if (!message.content.startsWith(PREFIX)) return;
 
   const args = message.content
@@ -97,17 +87,19 @@ client.on(Events.MessageCreate, async (message) => {
       PermissionsBitField.Flags.BanMembers
     )) {
       return message.reply(
-        'Nemate dozvolu za banovanje clanova.'
+        'Nemate dozvolu za banovanje članova.'
       );
     }
 
     const userId = args[0];
 
-    if (!userId || !/^\d{17,20}$/.test(userId)) {
+    if (!userId) {
       return message.reply(
-        'Pogresan ID!\nKoriscenje: `!ban ID razlog`'
+        'Korišćenje: `!ban ID razlog`'
       );
     }
+
+    if (!/^\d{17,20}$/.test(userId)) return;
 
     const reason = args.slice(1).join(' ') || 'Razlog nije naveden';
 
@@ -127,13 +119,13 @@ client.on(Events.MessageCreate, async (message) => {
       }
 
       await message.reply(
-        `Uspesno ste banovali korisnika sa ID-em \`${userId}\`.`
+        `Uspešno ste banovali korisnika sa ID-em \`${userId}\`.`
       );
 
       console.log(`Banovan korisnik: ${userId}`);
 
     } catch (error) {
-      console.error('Greska pri banovanju:', error);
+      console.error('Greška pri banovanju:', error);
 
       await message.reply(
         'Banovanje nije uspelo. Proverite ID i dozvole bota.'
@@ -157,11 +149,13 @@ client.on(Events.MessageCreate, async (message) => {
 
     const userId = args[0];
 
-    if (!userId || !/^\d{17,20}$/.test(userId)) {
+    if (!userId) {
       return message.reply(
-        'Pogresan ID!\nKoriscenje: `!unban ID razlog`'
+        'Korišćenje: `!unban ID razlog`'
       );
     }
+
+    if (!/^\d{17,20}$/.test(userId)) return;
 
     const reason = args.slice(1).join(' ') || 'Razlog nije naveden';
 
@@ -182,13 +176,13 @@ client.on(Events.MessageCreate, async (message) => {
       }
 
       await message.reply(
-        `Uspesno ste skinuli ban korisniku sa ID-em \`${userId}\`.`
+        `Uspešno ste skinuli ban korisniku sa ID-em \`${userId}\`.`
       );
 
       console.log(`Skinut ban korisniku: ${userId}`);
 
     } catch (error) {
-      console.error('Greska pri skidanju bana:', error);
+      console.error('Greška pri skidanju bana:', error);
 
       await message.reply(
         'Skidanje bana nije uspelo. Proverite ID i da li je korisnik banovan.'
