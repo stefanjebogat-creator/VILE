@@ -54,7 +54,7 @@ client.on(Events.GuildMemberAdd, async (member) => {
     if (!channel || !channel.isTextBased()) return;
 
     await channel.send({
-      content: `**${member}** se upravo pridružio serveru **VILE**.`,
+      content: `**${member}** just joined **VILE**.`,
       allowedMentions: {
         users: [member.id]
       }
