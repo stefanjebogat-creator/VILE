@@ -66,7 +66,7 @@ client.on(Events.GuildMemberAdd, async (member) => {
 });
 
 // ==============================
-// BAN AND UNBAN COMMANDS
+// COMMANDS
 // ==============================
 
 client.on(Events.MessageCreate, async (message) => {
@@ -133,16 +133,8 @@ client.on(Events.MessageCreate, async (message) => {
           .setColor(COLOR)
           .setTitle('Member Banned')
           .addFields(
-            {
-              name: 'User',
-              value: `<@${userId}>`,
-              inline: false
-            },
-            {
-              name: 'Reason',
-              value: reason,
-              inline: false
-            }
+            { name: 'User', value: `<@${userId}>` },
+            { name: 'Reason', value: reason }
           )
           .setFooter({ text: 'VILE • Moderation' })
           .setTimestamp();
@@ -206,9 +198,7 @@ client.on(Events.MessageCreate, async (message) => {
     if (!userId) {
       const embed = new EmbedBuilder()
         .setColor(COLOR)
-        .setDescription(
-          'Usage: `!unban ID reason`'
-        );
+        .setDescription('Usage: `!unban ID reason`');
 
       return message.channel.send({
         embeds: [embed],
@@ -235,16 +225,8 @@ client.on(Events.MessageCreate, async (message) => {
           .setColor(COLOR)
           .setTitle('Member Unbanned')
           .addFields(
-            {
-              name: 'User',
-              value: `<@${userId}>`,
-              inline: false
-            },
-            {
-              name: 'Reason',
-              value: reason,
-              inline: false
-            }
+            { name: 'User', value: `<@${userId}>` },
+            { name: 'Reason', value: reason }
           )
           .setFooter({ text: 'VILE • Moderation' })
           .setTimestamp();
@@ -279,6 +261,88 @@ client.on(Events.MessageCreate, async (message) => {
 
       await message.channel.send({
         embeds: [errorEmbed],
+        allowedMentions: { parse: [] }
+      });
+    }
+  }
+
+  // ============================
+  // CLEAR COMMAND
+  // ============================
+
+  if (command === 'clear') {
+
+    if (!message.member.permissions.has(
+      PermissionsBitField.Flags.ManageMessages
+    )) {
+      const embed = new EmbedBuilder()
+        .setColor(COLOR)
+        .setDescription('You do not have permission to delete messages.');
+
+      return message.channel.send({
+        embeds: [embed],
+        allowedMentions: { parse: [] }
+      });
+    }
+
+    const amount = Number(args[0]);
+
+    if (!args[0]) {
+      const embed = new EmbedBuilder()
+        .setColor(COLOR)
+        .setDescription('Usage: `!clear amount`\nExample: `!clear 50`');
+
+      return message.channel.send({
+        embeds: [embed],
+        allowedMentions: { parse: [] }
+      });
+    }
+
+    if (!Number.isInteger(amount) || amount < 1 || amount > 100) {
+      const embed = new EmbedBuilder()
+        .setColor(COLOR)
+        .setDescription('Please enter a number between 1 and 100.');
+
+      return message.channel.send({
+        embeds: [embed],
+        allowedMentions: { parse: [] }
+      });
+    }
+
+    try {
+      const deleted = await message.channel.bulkDelete(
+        amount + 1,
+        true
+      );
+
+      const deletedCount = Math.max(0, deleted.size - 1);
+
+      const embed = new EmbedBuilder()
+        .setColor(COLOR)
+        .setDescription(
+          `Successfully deleted **${deletedCount}** messages.`
+        );
+
+      const confirmation = await message.channel.send({
+        embeds: [embed],
+        allowedMentions: { parse: [] }
+      });
+
+      setTimeout(() => {
+        confirmation.delete().catch(() => {});
+      }, 5000);
+
+    } catch (error) {
+      console.error('Clear error:', error);
+
+      const embed = new EmbedBuilder()
+        .setColor(COLOR)
+        .setDescription(
+          'Failed to delete messages. Check the bot permissions.'
+        );
+
+      await message.channel.send({
+        embeds: [embed],
         allowedMentions: { parse: [] }
       });
     }
