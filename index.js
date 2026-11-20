@@ -476,18 +476,24 @@ client.on(Events.MessageCreate, async (message) => {
       return message.channel.send({ embeds: [embed] });
     }
 
-    const roastMessages = [
-      'has the personality of a loading screen. 💀',
-      'is proof that Wi-Fi signals can have a personality. 😂',
-      'could lose an argument with a wall.',
-      'has more lag than a 2005 computer.',
-      'is the reason instructions come with pictures.',
-      'brings absolutely nothing to the group project. 💀',
-      'has the confidence of a genius and the logic of a potato. 🥔',
-      'needs a software update for their brain. 😂',
-      'is running on 1% battery and 0% common sense.',
-      'could make a simple task look like a final boss.'
-    ];
+   const roastMessages = [
+  'ima manje mozga nego što telefon ima memorije. 💀',
+  'kad razmišlja, čuje se zvuk greške.',
+  'toliko je spor da ga i puž čeka.',
+  'ima više sreće nego pameti.',
+  'čak bi i Google odustao od pokušaja da ga razume.',
+  'kad bi glupost bila sport, bio bi svetski šampion. 🏆',
+  'ima dve leve ruke i tri leve noge.',
+  'nije on glup, samo mu je mozak na odmoru.',
+  'toliko je izgubljen da bi se izgubio i u sopstvenoj sobi.',
+  'njegov mozak radi na probnoj verziji.',
+  'kad uđe u sobu, IQ automatski padne za 50.',
+  'ima više bagova nego Windows bez ažuriranja.',
+  'čak ga ni mama ne razume ponekad. 😂',
+  'da je ćutanje zlato, on bi bio milioner.',
+  'toliko je spor da mu poruka stigne pre nego što je pošalje.',
+  'nije problem što ne zna, nego što je siguran da zna.'
+];
 
     const randomRoast = roastMessages[
       Math.floor(Math.random() * roastMessages.length)
