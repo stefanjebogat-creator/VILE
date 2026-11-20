@@ -17,7 +17,7 @@ const client = new Client({
 });
 
 // ==============================
-// VILE PODESAVANJA
+// VILE CONFIGURATION
 // ==============================
 
 const ROLE_ID = '1573097204862943262';
@@ -28,15 +28,15 @@ const PREFIX = '!';
 const COLOR = 0x56015A;
 
 // ==============================
-// BOT ONLINE
+// BOT READY
 // ==============================
 
 client.once(Events.ClientReady, (bot) => {
-  console.log(`VILE je pokrenut kao ${bot.user.tag}!`);
+  console.log(`VILE is online as ${bot.user.tag}!`);
 });
 
 // ==============================
-// WELCOME SISTEM
+// WELCOME SYSTEM
 // ==============================
 
 client.on(Events.GuildMemberAdd, async (member) => {
@@ -61,12 +61,12 @@ client.on(Events.GuildMemberAdd, async (member) => {
     });
 
   } catch (error) {
-    console.error('Greška pri welcome sistemu:', error);
+    console.error('Welcome system error:', error);
   }
 });
 
 // ==============================
-// BAN I UNBAN KOMANDE
+// BAN AND UNBAN COMMANDS
 // ==============================
 
 client.on(Events.MessageCreate, async (message) => {
@@ -81,7 +81,7 @@ client.on(Events.MessageCreate, async (message) => {
   const command = args.shift()?.toLowerCase();
 
   // ============================
-  // BAN KOMANDA
+  // BAN COMMAND
   // ============================
 
   if (command === 'ban') {
@@ -91,7 +91,7 @@ client.on(Events.MessageCreate, async (message) => {
     )) {
       const embed = new EmbedBuilder()
         .setColor(COLOR)
-        .setDescription('Nemate dozvolu za banovanje članova.');
+        .setDescription('You do not have permission to ban members.');
 
       return message.channel.send({
         embeds: [embed],
@@ -106,7 +106,7 @@ client.on(Events.MessageCreate, async (message) => {
       const embed = new EmbedBuilder()
         .setColor(COLOR)
         .setDescription(
-          'Korišćenje: `!ban ID razlog`\nIli: `!ban @korisnik razlog`'
+          'Usage: `!ban ID reason`\nOr: `!ban @user reason`'
         );
 
       return message.channel.send({
@@ -117,11 +117,11 @@ client.on(Events.MessageCreate, async (message) => {
 
     if (!/^\d{17,20}$/.test(userId)) return;
 
-    const reason = args.slice(1).join(' ') || 'Razlog nije naveden';
+    const reason = args.slice(1).join(' ') || 'No reason provided';
 
     try {
       await message.guild.members.ban(userId, {
-        reason: `${reason} | Banovao: ${message.author.tag}`
+        reason: `${reason} | Banned by: ${message.author.tag}`
       });
 
       const channel = message.guild.channels.cache.get(
@@ -131,20 +131,20 @@ client.on(Events.MessageCreate, async (message) => {
       if (channel && channel.isTextBased()) {
         const embed = new EmbedBuilder()
           .setColor(COLOR)
-          .setTitle('Korisnik je banovan')
+          .setTitle('Member Banned')
           .addFields(
             {
-              name: 'Korisnik',
+              name: 'User',
               value: `<@${userId}>`,
               inline: false
             },
             {
-              name: 'Razlog',
+              name: 'Reason',
               value: reason,
               inline: false
             }
           )
-          .setFooter({ text: 'VILE • Moderacija' })
+          .setFooter({ text: 'VILE • Moderation' })
           .setTimestamp();
 
         await channel.send({
@@ -156,7 +156,7 @@ client.on(Events.MessageCreate, async (message) => {
       const successEmbed = new EmbedBuilder()
         .setColor(COLOR)
         .setDescription(
-          `Uspešno ste banovali korisnika <@${userId}>.`
+          `Successfully banned user <@${userId}>.`
         );
 
       await message.channel.send({
@@ -164,15 +164,15 @@ client.on(Events.MessageCreate, async (message) => {
         allowedMentions: { parse: [] }
       });
 
-      console.log(`Banovan korisnik: ${userId}`);
+      console.log(`Banned user: ${userId}`);
 
     } catch (error) {
-      console.error('Greška pri banovanju:', error);
+      console.error('Ban error:', error);
 
       const errorEmbed = new EmbedBuilder()
         .setColor(COLOR)
         .setDescription(
-          'Banovanje nije uspelo. Proverite ID i dozvole bota.'
+          'Failed to ban the user. Check the ID and bot permissions.'
         );
 
       await message.channel.send({
@@ -183,7 +183,7 @@ client.on(Events.MessageCreate, async (message) => {
   }
 
   // ============================
-  // UNBAN KOMANDA
+  // UNBAN COMMAND
   // ============================
 
   if (command === 'unban') {
@@ -193,7 +193,7 @@ client.on(Events.MessageCreate, async (message) => {
     )) {
       const embed = new EmbedBuilder()
         .setColor(COLOR)
-        .setDescription('Nemate dozvolu za skidanje bana.');
+        .setDescription('You do not have permission to unban members.');
 
       return message.channel.send({
         embeds: [embed],
@@ -207,7 +207,7 @@ client.on(Events.MessageCreate, async (message) => {
       const embed = new EmbedBuilder()
         .setColor(COLOR)
         .setDescription(
-          'Korišćenje: `!unban ID razlog`'
+          'Usage: `!unban ID reason`'
         );
 
       return message.channel.send({
@@ -218,12 +218,12 @@ client.on(Events.MessageCreate, async (message) => {
 
     if (!/^\d{17,20}$/.test(userId)) return;
 
-    const reason = args.slice(1).join(' ') || 'Razlog nije naveden';
+    const reason = args.slice(1).join(' ') || 'No reason provided';
 
     try {
       await message.guild.members.unban(
         userId,
-        `${reason} | Skinuo ban: ${message.author.tag}`
+        `${reason} | Unbanned by: ${message.author.tag}`
       );
 
       const channel = message.guild.channels.cache.get(
@@ -233,20 +233,20 @@ client.on(Events.MessageCreate, async (message) => {
       if (channel && channel.isTextBased()) {
         const embed = new EmbedBuilder()
           .setColor(COLOR)
-          .setTitle('Korisniku je skinut ban')
+          .setTitle('Member Unbanned')
           .addFields(
             {
-              name: 'Korisnik',
+              name: 'User',
               value: `<@${userId}>`,
               inline: false
             },
             {
-              name: 'Razlog',
+              name: 'Reason',
               value: reason,
               inline: false
             }
           )
-          .setFooter({ text: 'VILE • Moderacija' })
+          .setFooter({ text: 'VILE • Moderation' })
           .setTimestamp();
 
         await channel.send({
@@ -258,7 +258,7 @@ client.on(Events.MessageCreate, async (message) => {
       const successEmbed = new EmbedBuilder()
         .setColor(COLOR)
         .setDescription(
-          `Uspešno ste skinuli ban korisniku <@${userId}>.`
+          `Successfully unbanned user <@${userId}>.`
         );
 
       await message.channel.send({
@@ -266,15 +266,15 @@ client.on(Events.MessageCreate, async (message) => {
         allowedMentions: { parse: [] }
       });
 
-      console.log(`Skinut ban korisniku: ${userId}`);
+      console.log(`Unbanned user: ${userId}`);
 
     } catch (error) {
-      console.error('Greška pri skidanju bana:', error);
+      console.error('Unban error:', error);
 
       const errorEmbed = new EmbedBuilder()
         .setColor(COLOR)
         .setDescription(
-          'Skidanje bana nije uspelo. Proverite ID i da li je korisnik banovan.'
+          'Failed to unban the user. Check the ID and whether the user is banned.'
         );
 
       await message.channel.send({
@@ -286,7 +286,7 @@ client.on(Events.MessageCreate, async (message) => {
 });
 
 // ==============================
-// POKRETANJE BOTA
+// BOT LOGIN
 // ==============================
 
 client.login(process.env.TOKEN);
