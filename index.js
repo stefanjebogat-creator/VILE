@@ -54,7 +54,7 @@ client.on(Events.GuildMemberAdd, async (member) => {
     if (!channel || !channel.isTextBased()) return;
 
     await channel.send({
-      content: `**${member}** just joined **VILE**.`,
+      content: `**${member}** se upravo pridružio serveru **VILE**.`,
       allowedMentions: {
         users: [member.id]
       }
@@ -93,7 +93,10 @@ client.on(Events.MessageCreate, async (message) => {
         .setColor(COLOR)
         .setDescription('Nemate dozvolu za banovanje članova.');
 
-      return message.reply({ embeds: [embed] });
+      return message.channel.send({
+        embeds: [embed],
+        allowedMentions: { parse: [] }
+      });
     }
 
     const mentionedUser = message.mentions.users.first();
@@ -106,7 +109,10 @@ client.on(Events.MessageCreate, async (message) => {
           'Korišćenje: `!ban ID razlog`\nIli: `!ban @korisnik razlog`'
         );
 
-      return message.reply({ embeds: [embed] });
+      return message.channel.send({
+        embeds: [embed],
+        allowedMentions: { parse: [] }
+      });
     }
 
     if (!/^\d{17,20}$/.test(userId)) return;
@@ -129,7 +135,7 @@ client.on(Events.MessageCreate, async (message) => {
           .addFields(
             {
               name: 'Korisnik',
-              value: `\`${userId}\``,
+              value: `<@${userId}>`,
               inline: false
             },
             {
@@ -141,16 +147,22 @@ client.on(Events.MessageCreate, async (message) => {
           .setFooter({ text: 'VILE • Moderacija' })
           .setTimestamp();
 
-        await channel.send({ embeds: [embed] });
+        await channel.send({
+          embeds: [embed],
+          allowedMentions: { parse: [] }
+        });
       }
 
       const successEmbed = new EmbedBuilder()
         .setColor(COLOR)
         .setDescription(
-          `Uspešno ste banovali korisnika sa ID-em \`${userId}\`.`
+          `Uspešno ste banovali korisnika <@${userId}>.`
         );
 
-      await message.reply({ embeds: [successEmbed] });
+      await message.channel.send({
+        embeds: [successEmbed],
+        allowedMentions: { parse: [] }
+      });
 
       console.log(`Banovan korisnik: ${userId}`);
 
@@ -163,7 +175,10 @@ client.on(Events.MessageCreate, async (message) => {
           'Banovanje nije uspelo. Proverite ID i dozvole bota.'
         );
 
-      await message.reply({ embeds: [errorEmbed] });
+      await message.channel.send({
+        embeds: [errorEmbed],
+        allowedMentions: { parse: [] }
+      });
     }
   }
 
@@ -180,7 +195,10 @@ client.on(Events.MessageCreate, async (message) => {
         .setColor(COLOR)
         .setDescription('Nemate dozvolu za skidanje bana.');
 
-      return message.reply({ embeds: [embed] });
+      return message.channel.send({
+        embeds: [embed],
+        allowedMentions: { parse: [] }
+      });
     }
 
     const userId = args[0];
@@ -192,7 +210,10 @@ client.on(Events.MessageCreate, async (message) => {
           'Korišćenje: `!unban ID razlog`'
         );
 
-      return message.reply({ embeds: [embed] });
+      return message.channel.send({
+        embeds: [embed],
+        allowedMentions: { parse: [] }
+      });
     }
 
     if (!/^\d{17,20}$/.test(userId)) return;
@@ -216,7 +237,7 @@ client.on(Events.MessageCreate, async (message) => {
           .addFields(
             {
               name: 'Korisnik',
-              value: `\`${userId}\``,
+              value: `<@${userId}>`,
               inline: false
             },
             {
@@ -228,16 +249,22 @@ client.on(Events.MessageCreate, async (message) => {
           .setFooter({ text: 'VILE • Moderacija' })
           .setTimestamp();
 
-        await channel.send({ embeds: [embed] });
+        await channel.send({
+          embeds: [embed],
+          allowedMentions: { parse: [] }
+        });
       }
 
       const successEmbed = new EmbedBuilder()
         .setColor(COLOR)
         .setDescription(
-          `Uspešno ste skinuli ban korisniku sa ID-em \`${userId}\`.`
+          `Uspešno ste skinuli ban korisniku <@${userId}>.`
         );
 
-      await message.reply({ embeds: [successEmbed] });
+      await message.channel.send({
+        embeds: [successEmbed],
+        allowedMentions: { parse: [] }
+      });
 
       console.log(`Skinut ban korisniku: ${userId}`);
 
@@ -250,7 +277,10 @@ client.on(Events.MessageCreate, async (message) => {
           'Skidanje bana nije uspelo. Proverite ID i da li je korisnik banovan.'
         );
 
-      await message.reply({ embeds: [errorEmbed] });
+      await message.channel.send({
+        embeds: [errorEmbed],
+        allowedMentions: { parse: [] }
+      });
     }
   }
 });
