@@ -275,47 +275,76 @@ client.on(Events.MessageCreate, async (message) => {
     if (!message.member.permissions.has(
       PermissionsBitField.Flags.ManageMessages
     )) {
-      const embed = new EmbedBuilder()
-        .setColor(COLOR)
-        .setDescription('You do not have permission to delete messages.');
-
       return message.channel.send({
-        embeds: [embed],
-        allowedMentions: { parse: [] }
+        embeds: [
+          new EmbedBuilder()
+            .setColor(COLOR)
+            .setDescription('You do not have permission to delete messages.')
+        ]
+      });
+    }
+
+    const botPermissions = message.channel.permissionsFor(
+      message.guild.members.me
+    );
+
+    if (!botPermissions.has([
+      PermissionsBitField.Flags.ManageMessages,
+      PermissionsBitField.Flags.ReadMessageHistory,
+      PermissionsBitField.Flags.ViewChannel
+    ])) {
+      return message.channel.send({
+        embeds: [
+          new EmbedBuilder()
+            .setColor(COLOR)
+            .setDescription('The bot is missing permissions to delete messages.')
+        ]
       });
     }
 
     const amount = Number(args[0]);
 
     if (!args[0]) {
-      const embed = new EmbedBuilder()
-        .setColor(COLOR)
-        .setDescription('Usage: `!clear amount`\nExample: `!clear 50`');
-
       return message.channel.send({
-        embeds: [embed],
-        allowedMentions: { parse: [] }
+        embeds: [
+          new EmbedBuilder()
+            .setColor(COLOR)
+            .setDescription('Usage: `!clear amount`\nExample: `!clear 50`')
+        ]
       });
     }
 
     if (!Number.isInteger(amount) || amount < 1 || amount > 100) {
-      const embed = new EmbedBuilder()
-        .setColor(COLOR)
-        .setDescription('Please enter a number between 1 and 100.');
-
       return message.channel.send({
-        embeds: [embed],
-        allowedMentions: { parse: [] }
+        embeds: [
+          new EmbedBuilder()
+            .setColor(COLOR)
+            .setDescription('Please enter a number between 1 and 100.')
+        ]
       });
     }
 
     try {
-      const deleted = await message.channel.bulkDelete(
-        amount + 1,
-        true
-      );
+      const messages = await message.channel.messages.fetch({
+        limit: 100
+      });
 
-      const deletedCount = Math.max(0, deleted.size - 1);
+      const toDelete = messages
+        .filter(msg => msg.id !== message.id)
+        .filter(msg => Date.now() - msg.createdTimestamp < 14 * 24 * 60 * 60 * 1000)
+        .first(amount);
+
+      let deletedCount = 0;
+
+      // Discord bulkDelete supports at most 100 messages per request.
+      if (toDelete.length > 0) {
+        const deleted = await message.channel.bulkDelete(
+          toDelete,
+          true
+        );
+
+        deletedCount = deleted.size;
+      }
 
       const embed = new EmbedBuilder()
         .setColor(COLOR)
@@ -338,7 +367,7 @@ client.on(Events.MessageCreate, async (message) => {
       const embed = new EmbedBuilder()
         .setColor(COLOR)
         .setDescription(
-          'Failed to delete messages. Check the bot permissions.'
+          `Failed to delete messages. Error: \`${error.code || error.message}\``
         );
 
       await message.channel.send({
