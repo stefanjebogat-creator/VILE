@@ -61,7 +61,8 @@ client.on(Events.MessageCreate, async (message) => {
 
   // BAN
   if (command === 'ban') {
-    const userId = message.mentions.users.first()?.id || args[0];
+    const mentionedUser = message.mentions.users.first();
+    const userId = mentionedUser?.id || args[0];
 
     if (!userId) {
       const embed = new EmbedBuilder()
@@ -73,7 +74,7 @@ client.on(Events.MessageCreate, async (message) => {
 
     if (!/^\d{17,20}$/.test(userId)) return;
 
-    const reason = args.slice(message.mentions.users.first() ? 0 : 1).join(' ') || 'No reason provided.';
+    const reason = args.slice(mentionedUser ? 1 : 1).join(' ') || 'No reason provided.';
 
     try {
       await message.guild.members.ban(userId, {
@@ -365,6 +366,138 @@ client.on(Events.MessageCreate, async (message) => {
         `**Online for:**\n${days} days, ${hours} hours, ${minutes} minutes and ${seconds} seconds.`
       )
       .setFooter({ text: 'VILE • System' })
+      .setTimestamp();
+
+    return message.channel.send({
+      embeds: [embed],
+      allowedMentions: { parse: [] }
+    });
+  }
+
+  // SHIP
+  if (command === 'ship') {
+    const users = [...message.mentions.users.values()];
+
+    if (users.length === 0) {
+      const embed = new EmbedBuilder()
+        .setColor(COLOR)
+        .setDescription('Usage: `!ship @user` or `!ship @user @user`');
+
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    const firstUser = users.length >= 2 ? users[0] : message.author;
+    const secondUser = users.length >= 2 ? users[1] : users[0];
+
+    const percentage = Math.floor(Math.random() * 101);
+
+    let shipMessage;
+
+    if (percentage >= 90) {
+      shipMessage = 'A perfect match! ❤️';
+    } else if (percentage >= 70) {
+      shipMessage = 'There is definitely something special here! 💕';
+    } else if (percentage >= 40) {
+      shipMessage = 'There might be a chance! 💗';
+    } else {
+      shipMessage = 'Maybe better as friends! 😂';
+    }
+
+    const embed = new EmbedBuilder()
+      .setColor(COLOR)
+      .setTitle('VILE • Love Calculator')
+      .setDescription(
+        `💘 **${firstUser.username}** + **${secondUser.username}**\n\n` +
+        `**Love percentage:** ${percentage}%\n\n${shipMessage}`
+      )
+      .setFooter({ text: 'VILE • Fun' })
+      .setTimestamp();
+
+    return message.channel.send({
+      embeds: [embed],
+      allowedMentions: { parse: [] }
+    });
+  }
+
+  // HUG
+  if (command === 'hug') {
+    const target = message.mentions.users.first();
+
+    if (!target) {
+      const embed = new EmbedBuilder()
+        .setColor(COLOR)
+        .setDescription('Usage: `!hug @user`');
+
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    const hugMessages = [
+      'sent a warm hug to',
+      'gave a big hug to',
+      'is sending lots of love to',
+      'gave a cozy hug to'
+    ];
+
+    const randomMessage = hugMessages[
+      Math.floor(Math.random() * hugMessages.length)
+    ];
+
+    const embed = new EmbedBuilder()
+      .setColor(COLOR)
+      .setDescription(
+        `🤗 **${message.author.username}** ${randomMessage} **${target.username}**! ❤️`
+      )
+      .setFooter({ text: 'VILE • Fun' })
+      .setTimestamp();
+
+    return message.channel.send({
+      embeds: [embed],
+      allowedMentions: { parse: [] }
+    });
+  }
+
+  // ROAST
+  if (command === 'roast') {
+    const target = message.mentions.users.first();
+
+    if (!target) {
+      const embed = new EmbedBuilder()
+        .setColor(COLOR)
+        .setDescription('Usage: `!roast @user`');
+
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    if (target.id === message.author.id) {
+      const embed = new EmbedBuilder()
+        .setColor(COLOR)
+        .setDescription('You cannot roast yourself. 😂');
+
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    const roastMessages = [
+      'has the personality of a loading screen. 💀',
+      'is proof that Wi-Fi signals can have a personality. 😂',
+      'could lose an argument with a wall.',
+      'has more lag than a 2005 computer.',
+      'is the reason instructions come with pictures.',
+      'brings absolutely nothing to the group project. 💀',
+      'has the confidence of a genius and the logic of a potato. 🥔',
+      'needs a software update for their brain. 😂',
+      'is running on 1% battery and 0% common sense.',
+      'could make a simple task look like a final boss.'
+    ];
+
+    const randomRoast = roastMessages[
+      Math.floor(Math.random() * roastMessages.length)
+    ];
+
+    const embed = new EmbedBuilder()
+      .setColor(COLOR)
+      .setTitle('VILE • Roast')
+      .setDescription(`🔥 **${target.username}** ${randomRoast}`)
+      .setFooter({ text: 'VILE • Just for fun' })
       .setTimestamp();
 
     return message.channel.send({
