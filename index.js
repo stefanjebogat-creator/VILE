@@ -3,7 +3,8 @@ const {
   Client,
   GatewayIntentBits,
   PermissionsBitField,
-  Events
+  Events,
+  EmbedBuilder
 } = require('discord.js');
 
 const client = new Client({
@@ -24,6 +25,7 @@ const WELCOME_CHANNEL_ID = '1573121519830171839';
 const MODLOG_CHANNEL_ID = '1573136589737951283';
 
 const PREFIX = '!';
+const COLOR = 0x56015A;
 
 // ==============================
 // BOT ONLINE
@@ -87,25 +89,29 @@ client.on(Events.MessageCreate, async (message) => {
     if (!message.member.permissions.has(
       PermissionsBitField.Flags.BanMembers
     )) {
-      return message.reply(
-        'Nemate dozvolu za banovanje članova.'
-      );
+      const embed = new EmbedBuilder()
+        .setColor(COLOR)
+        .setDescription('Nemate dozvolu za banovanje članova.');
+
+      return message.reply({ embeds: [embed] });
     }
 
     const mentionedUser = message.mentions.users.first();
     const userId = mentionedUser?.id || args[0];
 
     if (!userId) {
-      return message.reply(
-        'Korišćenje: `!ban ID razlog` ili `!ban @korisnik razlog`'
-      );
+      const embed = new EmbedBuilder()
+        .setColor(COLOR)
+        .setDescription(
+          'Korišćenje: `!ban ID razlog`\nIli: `!ban @korisnik razlog`'
+        );
+
+      return message.reply({ embeds: [embed] });
     }
 
     if (!/^\d{17,20}$/.test(userId)) return;
 
-    const reason = (
-      mentionedUser ? args.slice(1) : args.slice(1)
-    ).join(' ') || 'Razlog nije naveden';
+    const reason = args.slice(1).join(' ') || 'Razlog nije naveden';
 
     try {
       await message.guild.members.ban(userId, {
@@ -117,23 +123,47 @@ client.on(Events.MessageCreate, async (message) => {
       );
 
       if (channel && channel.isTextBased()) {
-        await channel.send(
-          `**Korisnik sa ID-em \`${userId}\` je banovan sa servera VILE.**\nRazlog: ${reason}\nModerator: ${message.author}`
-        );
+        const embed = new EmbedBuilder()
+          .setColor(COLOR)
+          .setTitle('Korisnik je banovan')
+          .addFields(
+            {
+              name: 'Korisnik',
+              value: `\`${userId}\``,
+              inline: false
+            },
+            {
+              name: 'Razlog',
+              value: reason,
+              inline: false
+            }
+          )
+          .setFooter({ text: 'VILE • Moderacija' })
+          .setTimestamp();
+
+        await channel.send({ embeds: [embed] });
       }
 
-      await message.reply(
-        `Uspešno ste banovali korisnika sa ID-em \`${userId}\`.`
-      );
+      const successEmbed = new EmbedBuilder()
+        .setColor(COLOR)
+        .setDescription(
+          `Uspešno ste banovali korisnika sa ID-em \`${userId}\`.`
+        );
+
+      await message.reply({ embeds: [successEmbed] });
 
       console.log(`Banovan korisnik: ${userId}`);
 
     } catch (error) {
       console.error('Greška pri banovanju:', error);
 
-      await message.reply(
-        'Banovanje nije uspelo. Proverite ID i dozvole bota.'
-      );
+      const errorEmbed = new EmbedBuilder()
+        .setColor(COLOR)
+        .setDescription(
+          'Banovanje nije uspelo. Proverite ID i dozvole bota.'
+        );
+
+      await message.reply({ embeds: [errorEmbed] });
     }
   }
 
@@ -146,17 +176,23 @@ client.on(Events.MessageCreate, async (message) => {
     if (!message.member.permissions.has(
       PermissionsBitField.Flags.BanMembers
     )) {
-      return message.reply(
-        'Nemate dozvolu za skidanje bana.'
-      );
+      const embed = new EmbedBuilder()
+        .setColor(COLOR)
+        .setDescription('Nemate dozvolu za skidanje bana.');
+
+      return message.reply({ embeds: [embed] });
     }
 
     const userId = args[0];
 
     if (!userId) {
-      return message.reply(
-        'Korišćenje: `!unban ID razlog`'
-      );
+      const embed = new EmbedBuilder()
+        .setColor(COLOR)
+        .setDescription(
+          'Korišćenje: `!unban ID razlog`'
+        );
+
+      return message.reply({ embeds: [embed] });
     }
 
     if (!/^\d{17,20}$/.test(userId)) return;
@@ -174,23 +210,47 @@ client.on(Events.MessageCreate, async (message) => {
       );
 
       if (channel && channel.isTextBased()) {
-        await channel.send(
-          `**Korisniku sa ID-em \`${userId}\` je skinut ban na serveru VILE.**\nRazlog: ${reason}\nModerator: ${message.author}`
-        );
+        const embed = new EmbedBuilder()
+          .setColor(COLOR)
+          .setTitle('Korisniku je skinut ban')
+          .addFields(
+            {
+              name: 'Korisnik',
+              value: `\`${userId}\``,
+              inline: false
+            },
+            {
+              name: 'Razlog',
+              value: reason,
+              inline: false
+            }
+          )
+          .setFooter({ text: 'VILE • Moderacija' })
+          .setTimestamp();
+
+        await channel.send({ embeds: [embed] });
       }
 
-      await message.reply(
-        `Uspešno ste skinuli ban korisniku sa ID-em \`${userId}\`.`
-      );
+      const successEmbed = new EmbedBuilder()
+        .setColor(COLOR)
+        .setDescription(
+          `Uspešno ste skinuli ban korisniku sa ID-em \`${userId}\`.`
+        );
+
+      await message.reply({ embeds: [successEmbed] });
 
       console.log(`Skinut ban korisniku: ${userId}`);
 
     } catch (error) {
       console.error('Greška pri skidanju bana:', error);
 
-      await message.reply(
-        'Skidanje bana nije uspelo. Proverite ID i da li je korisnik banovan.'
-      );
+      const errorEmbed = new EmbedBuilder()
+        .setColor(COLOR)
+        .setDescription(
+          'Skidanje bana nije uspelo. Proverite ID i da li je korisnik banovan.'
+        );
+
+      await message.reply({ embeds: [errorEmbed] });
     }
   }
 });
